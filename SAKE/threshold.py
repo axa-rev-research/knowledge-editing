@@ -149,7 +149,6 @@ def compute_means(cf, indexes=(0,10)):
     return source_mean_embs, target_mean_embs
 
 def compute_prompt_means_counterfact(cf, emb_model, indexes=(0,10)):
-    emb_model = SentenceTransformer(emb_model)
     prompt_embs = []
     for i in tqdm(range(indexes[0], indexes[1])):
         prompt = cf[i]['requested_rewrite']['prompt'].replace('{}', cf[i]['requested_rewrite']['subject'])

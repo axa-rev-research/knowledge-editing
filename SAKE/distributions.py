@@ -5,8 +5,11 @@ from anthropic import Anthropic
 import torch
 import numpy as np
 import ast
+import qwikidata
+from qwikidata.entity import WikidataItem
+from qwikidata.linked_data_interface import get_entity_dict_from_api
 
-def generate_paraphrases_counterfact(cf, provider, api_key, model, indexes=(0,5)):
+def generate_paraphrases_counterfact(cf, provider, api_key, model, indexes=(0,10)):
     
     if provider == "openai":
         client = OpenAI(api_key=api_key, base_url="https://api.openai.com/v1")
@@ -43,8 +46,6 @@ def generate_paraphrases_counterfact(cf, provider, api_key, model, indexes=(0,5)
                 source_list = ast.literal_eval(content)
                 source_list = source_list[:100]
                 cf[i]['source_list'] += source_list
-                print(source_list)
-                print(len(cf[i]['source_list']))
 
                 current_index = i + 1
 
@@ -92,3 +93,98 @@ def extract_representations_counterfact(model, tokenizer, cf, indexes=(0,5), dev
             forced_source_last_h = forced_source_output.hidden_states[-1][:,-1,:]
             cf[i]['forced_source_embs'].append(forced_source_last_h[0].tolist())
     return cf
+
+def generate_paraphrases_popular(pop, provider, api_key, model, indexes=(0,5)):
+    
+    if provider == "openai":
+        client = OpenAI(api_key=api_key, base_url="https://api.openai.com/v1")
+    elif provider == "anthropic":
+        client = Anthropic(api_key=api_key)
+    else:
+        raise ValueError(f"Provider {provider} not supported. Modify this function at SAKE/distributions/utils.py to generate the list.")
+    
+    current_index = indexes[0]
+    end_index = indexes[1]
+    while current_index < end_index:
+        try:
+            for i in tqdm(range(current_index, end_index)):
+                pop[i]['source_list'] = []
+                target_new_id = pop[i]['edit']['target_id']
+                target_new = WikidataItem(get_entity_dict_from_api(target_new_id)).get_label()
+                prompt = pop[i]['edit']['prompt'][:-len(target_new)-2]
+                source_message = "Write 100 sentences with a similar meaning of: '" + prompt + "'. Make sure that the sentences are meant to be immediately completed with precisely: '" + target_new + "'. Often, this could require ending the sentence with 'the', or something like that. Do not use '...' or '____'. Return the sentences as a Python list. Do not output anything else."   
+
+                if provider == "openai":
+                    message = client.chat.completions.create(
+                        model=model,
+                        messages=[{"role": "user", "content": source_message}],
+                        max_tokens=3500
+                    )
+                elif provider == "anthropic":
+                    message = client.messages.create(
+                        model=model,
+                        messages=[{"role": "user", "content": source_message}],
+                        max_tokens=3500
+                    )
+
+                content = message.content[0].text
+                source_list = ast.literal_eval(content)
+                source_list = source_list[:100]
+                pop[i]['source_list'] += source_list
+
+                current_index = i + 1
+
+        except Exception as e:
+            print(f"Error at index {current_index}: {e}")
+            print("Restarting loop from the last index...")
+    
+    return pop
+
+def generate_implications_popular(pop, provider, api_key, model, indexes=(0,5)):
+    
+    if provider == "openai":
+        client = OpenAI(api_key=api_key, base_url="https://api.openai.com/v1")
+    elif provider == "anthropic":
+        client = Anthropic(api_key=api_key)
+    else:
+        raise ValueError(f"Provider {provider} not supported. Modify this function at SAKE/distributions/utils.py to generate the list.")
+    
+    current_index = indexes[0]
+    end_index = indexes[1]
+    while current_index < end_index:
+        try:
+            for i in tqdm(range(current_index, end_index)):
+                pop[i]['comp_list'] = []
+                target_new_id = pop[i]['edit']['target_id']
+                target_true_id = pop[i]['edit']['original_fact']['target_id']
+                target_new = WikidataItem(get_entity_dict_from_api(target_new_id)).get_label()
+                target_true = WikidataItem(get_entity_dict_from_api(target_true_id)).get_label()
+                prompt = pop[i]['edit']['prompt'][:-len(target_new)-2]
+                
+                source_message = "Write 25 logical implications of: '" + prompt + "'. For example, if the sentence is: 'The country of citizenship of Leonardo di Caprio is', one logical implication could be: 'The capital of the country of citizenship of Leonardo di Caprio is'. The sentences should be meant to be completed with either: '" + target_true + "' or '" + target_new + "', or words related to them. In the example, the sentence could be completed with Washington or Damascus, exactly reflecting the edit going from United States of America to Syria. The main difference in the completion of the logical implications should be due to going from '" + target_true + "' to '" + target_new + "'. For example, 'The number of people in the country of citizenship of Leonardo di Caprio is' would not be a good example, because the change from 335 million to 23 million is not represented by the difference between USA and Syria. Return the sentences as a Python list. Do not output anything else."
+
+                if provider == "openai":
+                    message = client.chat.completions.create(
+                        model=model,
+                        messages=[{"role": "user", "content": source_message}],
+                        max_tokens=3500
+                    )
+                elif provider == "anthropic":
+                    message = client.messages.create(
+                        model=model,
+                        messages=[{"role": "user", "content": source_message}],
+                        max_tokens=3500
+                    )
+
+                content = message.content[0].text
+                comp_list = ast.literal_eval(content)
+                comp_list = comp_list[:25]
+                pop[i]['comp_list'] += comp_list
+
+                current_index = i + 1
+
+        except Exception as e:
+            print(f"Error at index {current_index}: {e}")
+            print("Restarting loop from the last index...")
+    
+    return pop
