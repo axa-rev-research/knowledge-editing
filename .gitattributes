@@ -1,1 +1,2 @@
 data/cf/example.json filter=lfs diff=lfs merge=lfs -text
+data/ripple/example.json filter=lfs diff=lfs merge=lfs -text
