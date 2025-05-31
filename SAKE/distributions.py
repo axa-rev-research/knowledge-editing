@@ -188,3 +188,74 @@ def generate_implications_popular(pop, provider, api_key, model, indexes=(0,5)):
             print("Restarting loop from the last index...")
     
     return pop
+
+def extract_representations_popular(model, tokenizer, pop, indexes=(0,5), device='mps'):
+    for i in tqdm(range(indexes[0], indexes[1])):
+        pop[i]['source_embs'] = []
+        pop[i]['forced_source_embs'] = []
+        pop[i]['target_embs'] = []
+        pop[i]['source_comp_embs'] = []
+        pop[i]['target_comp_embs'] = []
+
+        target_new_id = pop[i]['edit']['target_id']
+        target_true_id = pop[i]['edit']['original_fact']['target_id']
+        target_new = WikidataItem(get_entity_dict_from_api(target_new_id)).get_label()
+        target_true = WikidataItem(get_entity_dict_from_api(target_true_id)).get_label()
+
+        # source
+        for j in range(len(pop[i]['source_list'])):
+            source_prompt = pop[i]['source_list'][j]   
+            source_input_ids = tokenizer(source_prompt, return_tensors="pt").to(device).input_ids
+            with torch.no_grad():  
+                model.eval()
+                source_output = model(source_input_ids)
+            source_last_h = source_output.hidden_states[-1][:,-1,:]
+            pop[i]['source_embs'].append(source_last_h[0].tolist())
+
+        # forced source
+        for j in range(len(pop[i]['source_list'])):
+            source_prompt = "Repeat this sentence: '" + pop[i]['source_list'][j] + " " + target_true + "'. " + pop[i]['source_list'][j]
+            source_input_ids = tokenizer(source_prompt, return_tensors="pt").to(device).input_ids
+            with torch.no_grad():  
+                model.eval()
+                source_output = model(source_input_ids)
+            source_last_h = source_output.hidden_states[-1][:,-1,:]
+            pop[i]['forced_source_embs'].append(source_last_h[0].tolist())
+        
+        # target     
+        for j in range(len(pop[i]['source_list'])):
+            target_prompt = "Do not mention '" + target_true + "'. Repeat this sentence: '" + pop[i]['source_list'][j] + " " + target_new + "'. " + pop[i]['source_list'][j]
+            target_input_ids = tokenizer(target_prompt, return_tensors="pt").to(device).input_ids
+
+            with torch.no_grad():  
+                model.eval()
+                target_output = model(target_input_ids)
+
+            target_last_h = target_output.hidden_states[-1][:,-1,:]
+            pop[i]['target_embs'].append(target_last_h[0].tolist())
+
+        # source comp
+        for j in range(len(pop[i]['comp_list'])):
+            source_prompt = "Considering this context is now true: '" + pop[i]['edit']['original_fact']['prompt'] + "'. Complete this sentence:" + pop[i]['comp_list'][j]
+            source_input_ids = tokenizer(source_prompt, return_tensors="pt").to(device).input_ids
+
+            with torch.no_grad():
+                model.eval()
+                source_output = model(source_input_ids)
+        
+            source_last_h = source_output.hidden_states[-1][:,-1,:]
+            pop[i]['source_comp_embs'].append(source_last_h[0].tolist()) 
+
+        # target comp
+        for j in range(len(pop[i]['comp_list'])):
+            target_prompt = "Pretend that this context is true and forget your previous knowledge: '" + pop[i]['edit']['prompt'] + "'. Now, based on the previous context only, complete this sentence:" + pop[i]['comp_list'][j]
+            target_input_ids = tokenizer(target_prompt, return_tensors="pt").to(device).input_ids
+
+            with torch.no_grad():
+                model.eval()
+                target_output = model(target_input_ids)
+        
+            target_last_h = target_output.hidden_states[-1][:,-1,:]
+            pop[i]['target_comp_embs'].append(target_last_h[0].tolist())
+            
+    return pop

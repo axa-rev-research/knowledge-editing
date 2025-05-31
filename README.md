@@ -37,29 +37,6 @@ pip install -r requirements.txt
 
 ## Quick Start
 
-### Basic Usage
-
-```python
-import sys
-sys.path.append('.')
-from SAKE.distributions import *
-from SAKE.threshold import *
-from SAKE.edit import *
-
-# Load your data
-with open('data/cf/example.json') as f:
-    cf = json.load(f)
-
-# Set processing range
-indexes = (0, 5)  # Process first 5 edits
-
-# Learn optimal transport mappings
-maps = learn_mappings_counterfact(cf, indexes=indexes)
-
-# Apply knowledge edits with threshold mechanism
-# See examples/ directory for complete workflows
-```
-
 ### Running Examples
 
 The repository includes comprehensive Jupyter notebook examples:
