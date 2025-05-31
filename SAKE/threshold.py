@@ -160,3 +160,14 @@ def compute_prompt_means_counterfact(cf, emb_model, indexes=(0,10)):
         prompt_embs.append(np.mean(prompt_list_embs, axis = 0).tolist())
     
     return prompt_embs
+
+def compute_prompt_means_popular(pop, emb_model, indexes=(0,10)):
+    prompt_embs = []
+    for i in tqdm(range(indexes[0], indexes[1])):
+        prompt_list = pop[i]['source_list']
+        prompt_list_embs = []
+        for j in range(len(prompt_list)):
+            prompt_list_embs.append(emb_model.encode(prompt_list[j]))
+        prompt_embs.append(np.mean(prompt_list_embs, axis = 0).tolist())
+    
+    return prompt_embs
