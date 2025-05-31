@@ -1,10 +1,10 @@
 # SAKE: Steering Activations for Knowledge Editing
 
-SAKE (Steering Activations for Knowledge Editing) is a novel method for editing knowledge in Large Language Models (LLMs) that models facts as distributions rather than single prompts. Using Optimal Transport theory, SAKE alters LLM behavior over whole fact-related distributions, including paraphrases and logical implications, enabling more robust and generalizable knowledge edits.
+SAKE (Steering Activations for Knowledge Editing) is a novel method for LLM knowledge editing that models facts as distributions rather than single prompts. Using Optimal Transport theory, SAKE alters LLM behavior over whole fact-related distributions, including paraphrases and logical implications, enabling more robust and generalizable knowledge edits.
 
 ## Key Innovations
 
-Unlike traditional Knowledge Editing (KE) methods that optimize for individual prompts, SAKE addresses three major limitations of existing approaches:
+Unlike other Knowledge Editing (KE) methods that optimize for individual prompts, SAKE addresses three major limitations of existing approaches:
 
 1. **Logical Implications**: Better generalization to various types of logical implications related to edited facts
 2. **Contextual Robustness**: Improved performance on realistic conversational contexts, including long/noisy prompts and doubt-raising scenarios  
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 
 3. **Set up Hugging Face authentication:**
 - You'll need a Hugging Face account for model access
-- Some features require OpenAI or Anthropic API keys (or other providers by modifying sentence generation functions)
+- Distribution modeling requires OpenAI or Anthropic API keys (or other providers of your choice, modifying the sentence generation functions)
 
 ## Quick Start
 
