@@ -51,6 +51,11 @@ jupyter notebook examples/SAKE-gpt2xl-cf.ipynb
 jupyter notebook examples/SAKE-gpt2xl-pop.ipynb
 ```
 
+3. **Raising Doubts Example:**
+```bash
+jupyter notebook examples/SAKE-gpt2xl-doubts.ipynb
+```
+
 ## Project Structure
 
 ```
@@ -61,7 +66,8 @@ knowledge-editing/
 │   └── distributions.py    # Data generation and representation extraction
 ├── examples/               # Example notebooks
 │   ├── SAKE-gpt2xl-cf.ipynb    # CounterFact dataset example
-│   └── SAKE-gpt2xl-pop.ipynb   # Popular dataset example  
+│   ├── SAKE-gpt2xl-pop.ipynb   # Popular dataset example  
+│   └── SAKE-gpt2xl-doubts.ipynb # Doubts dataset example
 ├── data/                   # Data storage
 │   ├── cf/                 # CounterFact dataset files
 │   └── ripple/             # Additional datasets
