@@ -16,7 +16,7 @@ Unlike other Knowledge Editing (KE) methods that optimize for individual prompts
 - **Optimal Transport**: Uses optimal transport mappings to transform model representations between source and target distributions
 - **Threshold Mechanisms**: Edit criterion based on hidden state or prompt distance 
 - **Multiple Model Support**: Compatible with various transformer architectures (GPT-2, Llama, etc.)
-- **Evaluation Metrics**: Testing for accuracy, generalization, and specificity (CounterFact), logical implications (RippleEdits Popular)
+- **Evaluation Metrics**: Testing for accuracy, generalization, and specificity (CounterFact), logical implications (RippleEdits Popular), contextual robustness (Doubts)
 
 ## Installation
 
