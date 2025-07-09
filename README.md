@@ -1,5 +1,8 @@
 # SAKE: Steering Activations for Knowledge Editing
 
+Link to the paper: https://arxiv.org/abs/2503.01751
+Accepted to ACL 2025
+
 SAKE (Steering Activations for Knowledge Editing) is a novel method for LLM knowledge editing that models facts as distributions rather than single prompts. Using Optimal Transport theory, SAKE alters LLM behavior over whole fact-related distributions, including paraphrases and logical implications, enabling more robust and generalizable knowledge edits.
 
 ## Key Innovations
